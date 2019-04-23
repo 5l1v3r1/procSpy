@@ -3,6 +3,7 @@
 
 from os import listdir
 from os import stat
+from os import path
 from time import sleep
 import grp
 import pwd
@@ -21,10 +22,13 @@ DEAD_PROC = "I am dead and this is sad"
 SKY_IS_BLUE = True
 PROC_DIR = "/proc"
 PROC_DEAD = "DEADPROC"
+PROCSPY_FILE_INIT = "PROCSPY_FILE_HEADER"
+DB_NAME = "ProcSpy"
+
 PROCESS = namedtuple('PROCESS', 'pid ppid uid user cmdline timestamp')
 
 MODE_STDOUT = "stdout"
-MODE_DB = "mysql"
+MODE_DB = "db"
 MODE_FILE = "file"
 
 C_RESET = '\033[0m'
@@ -108,6 +112,7 @@ def writeNewProcs(procData, outfile):
 	with open(outfile, 'a') as f:
 		f.write(writeString + '\n')
 
+
 def writeDeadProcs(pid, outfile):
 	
 	timestamp = datetime.now()
@@ -118,16 +123,16 @@ def writeDeadProcs(pid, outfile):
 		f.write(writeString + '\n')
 
 
-def dbAddProc(procData):
+def dbAddProc(procData, user, passwd):
 
 	timestamp = datetime.now()
 
-	db = mysql.connector.connect( user="procspy",
-		        	      password="procspy",
+	db = mysql.connector.connect( user=user,
+		        	      password=passwd,
 			              host="127.0.0.1",
-				      database="ProcSpy"
+     				      database=DB_NAME
 		     			 )	
-	
+ 
 	cursor = db.cursor()
 
 	pid = procData.pid
@@ -148,14 +153,14 @@ def dbAddProc(procData):
 	cursor.close()
 	db.close()
 
-def dbTermProc(pid):
+def dbTermProc(pid, user, passwd):
 
 	timestamp = datetime.now()
 
-	db = mysql.connector.connect( user="procspy",
-		        	      password="procspy",
+	db = mysql.connector.connect( user=user,
+		        	      password=passwd,
 			              host="127.0.0.1",
-				      database="ProcSpy"
+				          database=DB_NAME
 		     			 )	
 
 
@@ -181,11 +186,15 @@ def dbTermProc(pid):
 	cursor.close()
 	db.close()
 
-		
-	
-	
 
+def checkFile(filename):
+	
+	fileExists = path.isFile(filename)
+	if not fileExists:
+		with open(filename, "w") as f:
+			f.write(PROCSPY_FILE_INIT + '\n')
 
+	
 def main():
 
 	parser = argparse.ArgumentParser()
@@ -193,7 +202,6 @@ def main():
 	parser.add_argument('-o', nargs='?', help='Specifies the output file in file mode')
 	parser.add_argument('-u', nargs='?', help="Username for database mode.")
 	parser.add_argument('-p', nargs='?', help="Password for database mode.")
-	parser.add_argument('-d', nargs='?', help="Password for database mode.")
 
 	args = parser.parse_args()
 
@@ -224,7 +232,7 @@ def main():
 		print("An output file must be specified when using file mode.")
 		sys.exit(1)
 
-	if mode_db and not (args.u or args.p or args.d):
+	if mode_db and not args.u:
 		print("Insufficient information provided for database mode.")
 		sys.exit(1)
 
@@ -254,14 +262,17 @@ def main():
 				if mode_file:
 		
 					outputFile = args.o
+					
+					# if the file already exists, no need to mark the file
+					# as a procSpy file since it already exists
+					checkFile(outputFile)				
 					writeNewProcs(procDat, outputFile)
 
 				if mode_db:
-					dbAddProc(procDat)
+					dbAddProc(procDat, args.u, args.p)
 
 		
 		for i in pidDiffs['KILLED_PIDS']:
-
 
 			if mode_stdout:
 				strout = f"{RED_MINUS} [{datetime.now()}] PID {i} has terminated."
@@ -274,7 +285,8 @@ def main():
 
 			if mode_db:
 				# we need to send in the cmd just in case of pid reuse.
-				dbTermProc(i)
+				dbTermProc(i, args.u, args.p)
+	
 
 		initialPids = newPids
 
