@@ -209,14 +209,6 @@ def dbTermProc(pid, user, passwd):
 	db.close()
 
 
-def checkFile(filename):
-	
-	fileExists = path.isfile(filename)
-	if not fileExists:
-		with open(filename, "w") as f:
-			f.write(PROCSPY_FILE_INIT + '\n')
-
-
 def runCycle(initialPids, outputFile=""):
 
 	while SKY_IS_BLUE:
@@ -239,9 +231,6 @@ def runCycle(initialPids, outputFile=""):
 					
 					if mode_file:
 		
-						# if the file already exists, no need to mark the file
-						# as a procSpy file since it already exists
-						checkFile(outputFile)				
 						writeNewProcs(procDat, outputFile)
 
 					if mode_db:
@@ -270,10 +259,8 @@ def runCycle(initialPids, outputFile=""):
 	
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--modes', nargs='?', help='Specifies mode to output commands')
+parser.add_argument('--mode', nargs='?', help='Specifies mode to output commands (either stdout,db or file, or any combination of those three)')
 parser.add_argument('-o', nargs='?', help='Specifies the output file in file mode')
-parser.add_argument('-u', nargs='?', help="Username for database mode.")
-parser.add_argument('-p', nargs='?', help="Password for database mode.")
 args = parser.parse_args()
 
 deployment_modes = args.modes

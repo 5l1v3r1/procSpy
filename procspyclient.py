@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import mysql.connector
 import argparse
 import sys
 from os import path
@@ -50,6 +49,7 @@ def parseFile(filename):
 			user = lineData[4].strip()
 			cmd = lineData[5].strip()
 
+			endtime = "NULL"
 			for i in deadProcs:
 				if int(i[1]) == pid:
 					endtime = i[0]
@@ -69,56 +69,88 @@ def checkHeader(filename):
 	return firstline == PROC_SPY_FILE_INIT
 
 
+def processFilters(processes, args):
 
-def main():
+	outProcs = processes
 
-	parser = argparse.ArgumentParser()
-	parser.add_argument('--mode', nargs='?', help='Specifies the mode to parse data from')
-	parser.add_argument('-a', action='store_true', help='Displays the entire command history')
-	parser.add_argument('-i', action='store_true', help='Enter interactive mode.')
-	parser.add_argument('-s', nargs='?', help='Source file for file mode.')
+	# indicates user just wants all processes
+	if args.all:
+		return outProcs
+
+	if args.user:
+		i = 0
+		while i < len(outProcs):
+			proc = outProcs[i] 
+			if proc.user != args.user:
+				del outProcs[i]
+			else:
+				i += 1
+
+	if args.cmd:
+		i = 0
+		while i < len(outProcs):
+			proc = outProcs[i]
+			if args.cmd not in proc.cmdline:
+				del outProcs[i]
+			else:
+				i += 1
+
+	if args.uid:
+		i = 0
+		while i < len(outProcs):
+			proc = outProcs[i] 
+			if proc.uid != int(args.uid):
+				del outProcs[i]
+			else:
+				i += 1
 
 
-	args = parser.parse_args()
-	modeArg = args.mode
-	mode = ""
+	return outProcs
+
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--mode', nargs='?', help='Specifies the mode to parse data from')
+parser.add_argument('--all', action='store_true', help='Displays the entire command history')
+parser.add_argument('--user', nargs='?', help='Query history for commands ran by certain user.')
+parser.add_argument('--uid', nargs='?', help='Query history for commands ran under a certain uid')
+parser.add_argument('--cmd', nargs='?', help='Query history for commands containing specified string')
+parser.add_argument('-i', action='store_true', help='Enter interactive mode.')
+parser.add_argument('-s', nargs='?', help='Source file for file mode.')
+
+
+args = parser.parse_args()
+modeArg = args.mode
+mode = ""
 	
-	if modeArg == MODE_FILE:
+if modeArg == MODE_FILE:
 
-		if not args.s:
-			print(f"{RED_MINUS} No source file specified. Please specify a source file with '-s'")
+	if not args.s:
+		print(f"{RED_MINUS} No source file specified. Please specify a source file with '-s'")
+		sys.exit(1)
+
+	elif args.s:
+		fileExists = path.isfile(args.s)
+		if not fileExists:
+			print(f"{RED_MINUS} Specified file could not be located. Please specify a valid procSpy file.")
 			sys.exit(1)
 
-		elif args.s:
-			fileExists = path.isfile(args.s)
-			if not fileExists:
-				print(f"{RED_MINUS} Specified file could not be located. Please specify a valid procSpy file.")
-				sys.exit(1)
-
-		#	if not checkHeader(args.s):
-		#		print(f"{RED_MINUS} The specified file doesn't appear to be a procSpy file.")
-		#		sys.exit(1)
-
-		
 			
-			procList = parseFile(args.s)
-			processFilters(procList, args)
+		procList = parseFile(args.s)
+		parsedProcs = processFilters(procList, args)
+		for i in parsedProcs:
+			print(i)
 				
 
 
-	elif modeArg == MODE_DB:
-		mode = modeArg
+elif modeArg == MODE_DB:
 
-	else:
-		print(f"{RED_MINUS} Invalid Mode Specified. Please state 'file' or 'db'")
-		sys.exit(1)
+	# only import if necessary
+	import mysql.connector
 
+	if not 
 
-		
-	
-	
-	
+else:
+	print(f"{RED_MINUS} Invalid Mode Specified. Please state 'file' or 'db'")
+	sys.exit(1)
 
-
-
-main()		

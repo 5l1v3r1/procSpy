@@ -123,8 +123,6 @@ def runCycle(initialPids, outputFile="psout.log"):
 			procDat = getProcData(i)
 			if procDat != DEAD_PROC :
 
-					# if the file already exists, no need to mark the file
-					# as a procSpy file since it already exists
 					checkFile(outputFile)				
 					writeNewProcs(procDat, outputFile)
 
@@ -139,11 +137,6 @@ def runCycle(initialPids, outputFile="psout.log"):
 
 		sleep(0.5)
 
-
-
-
-
-	
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', nargs='?')
