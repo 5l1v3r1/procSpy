@@ -167,11 +167,11 @@ def getDbConfig():
 		data = config["mySQL"]
 		return data
 	except:
-		print(f"{RED_MINUS} The appears to be some problems with your Database config file.")
+		print(f"{RED_MINUS} There appears to be some problems with your Database config file.")
 
 	
 
-def dbTermProc(pid, user, passwd):
+def dbTermProc(pid):
 
 	timestamp = datetime.now()
 
@@ -245,12 +245,12 @@ def runCycle(initialPids, outputFile=""):
 
 			if mode_db:
 				# we need to send in the cmd just in case of pid reuse.
-				dbTermProc(i, args.u, args.p)
+				dbTermProc(i)
 	
 
 		initialPids = newPids
 
-		sleep(0.5)
+		sleep(0.25)
 
 
 
@@ -263,7 +263,7 @@ parser.add_argument('--mode', nargs='?', help='Specifies mode to output commands
 parser.add_argument('-o', nargs='?', help='Specifies the output file in file mode')
 args = parser.parse_args()
 
-deployment_modes = args.modes
+deployment_modes = args.mode
 deployments = deployment_modes.split(",")
 
 mode_stdout = False
