@@ -9,12 +9,6 @@ import grp
 import pwd
 import sys
 import argparse
-
-try:
-	import mysql.connector
-except ImportError:
-	pass
-
 from datetime import datetime
 from collections import namedtuple
 
@@ -37,8 +31,10 @@ C_RESET = '\033[0m'
 C_RED = '\033[1;31m'
 C_GREEN = '\033[1;32m'
 C_GRAY = '\033[1;37m'
+C_YELLOW='\033[1;33m'
 GREEN_PLUS = f"{C_GREEN}[+]{C_RESET}"
 RED_MINUS = f"{C_RED}[-]{C_RESET}"
+YELLOW_EX = f"{C_YELLOW}[!]{C_RESET}"
 
 
 def getProcData(pid):
@@ -109,7 +105,7 @@ def writeNewProcs(procData, outfile):
 
 	timestamp = datetime.now()
 	
-	writeString = f'{timestamp}:{procData.pid}:{procData.ppid}:{procData.uid}:{procData.user}:{procData.cmdline}'
+	writeString = f'{timestamp}:::{procData.pid}:::{procData.ppid}:::{procData.uid}:::{procData.user}:::{procData.cmdline}'
 	
 	with open(outfile, 'a') as f:
 		f.write(writeString + '\n')
@@ -119,20 +115,25 @@ def writeDeadProcs(pid, outfile):
 	
 	timestamp = datetime.now()
 	
-	writeString = f'{timestamp}:{str(pid)}:{PROC_DEAD}'
+	writeString = f'{timestamp}:::{str(pid)}:::{PROC_DEAD}'
 
 	with open(outfile, 'a') as f:
 		f.write(writeString + '\n')
 
 
-def dbAddProc(procData, user, passwd):
+def dbAddProc(procData):
 
 	timestamp = datetime.now()
+
+	config = getDbConfig()
+	user = config["MYSQL_USER"]
+	passwd = config["MYSQL_PASS"]
+	database = config["MYSQL_DB"]
 
 	db = mysql.connector.connect( user=user,
 		        	      password=passwd,
 			              host="127.0.0.1",
-     				      database=DB_NAME
+     				      database=database
 		     			 )	
  
 	cursor = db.cursor()
@@ -155,14 +156,34 @@ def dbAddProc(procData, user, passwd):
 	cursor.close()
 	db.close()
 
+
+def getDbConfig():
+
+	config = configparser.ConfigParser()
+
+	config.read(DB_CFG_FILE)
+
+	try:
+		data = config["mySQL"]
+		return data
+	except:
+		print(f"{RED_MINUS} The appears to be some problems with your Database config file.")
+
+	
+
 def dbTermProc(pid, user, passwd):
 
 	timestamp = datetime.now()
 
+	config = getDbConfig()
+	user = config["MYSQL_USER"]
+	passwd = config["MYSQL_PASS"]
+	database = config["MYSQL_DB"]
+
 	db = mysql.connector.connect( user=user,
 		        	      password=passwd,
 			              host="127.0.0.1",
-				          database=DB_NAME
+				          database=database
 		     			 )	
 
 
@@ -174,7 +195,6 @@ def dbTermProc(pid, user, passwd):
 	cursor.execute(query, data)
 	try:
 		db_id = cursor.fetchall()[0][0]
-		print(db_id)
 	except IndexError:
 		return None
 
@@ -191,64 +211,16 @@ def dbTermProc(pid, user, passwd):
 
 def checkFile(filename):
 	
-	fileExists = path.isFile(filename)
+	fileExists = path.isfile(filename)
 	if not fileExists:
 		with open(filename, "w") as f:
 			f.write(PROCSPY_FILE_INIT + '\n')
 
-	
-def main():
 
-	parser = argparse.ArgumentParser()
-	parser.add_argument('--modes', nargs='?', help='Specifies mode to output commands')
-	parser.add_argument('-o', nargs='?', help='Specifies the output file in file mode')
-	parser.add_argument('-u', nargs='?', help="Username for database mode.")
-	parser.add_argument('-p', nargs='?', help="Password for database mode.")
-
-	args = parser.parse_args()
-
-	deployment_modes = args.modes
-	deployments = deployment_modes.split(",")
-	
-	mode_stdout = False
-	mode_file = False
-	mode_db = False
-	for i in deployments:
-		valid = False
-		if i.strip() == MODE_FILE:
-			mode_file = True
-			valid = True
-		if i.strip() == MODE_DB:
-			mode_db = True
-			valid = True
-		if i.strip() == MODE_STDOUT:
-			mode_stdout = True
-			valid = True
-
-		if not valid:
-			print(f"{RED_MINUS} Invalid mode(s) Selected. Please use '-h' for usage.")
-			sys.exit(1)
-		
-	
-	if mode_file and not args.o:
-		print(f"${RED_MINUS} An output file must be specified when using file mode.")
-		sys.exit(1)
-
-	if mode_db:
-
-		cfgExists = path.isFile(DB_CFG_FILE)
-		if not cfgExists:
-			print(f"${RED_MINUS} It looks like database mode has not been set up on this system (config file missing)."
-			print(f"${RED_MINUS} Please run the dbSetup.sh script to use database mode."
-			sys.exit(1)
-
-	#initializes pids. This will be used as a baseline, and any newly added
-	#processes will be recorded.
-	initialPids = getPids()
-	sleep(3)
+def runCycle(initialPids):
 
 	while SKY_IS_BLUE:
-		
+
 		newPids = getPids()
 		pidDiffs = getPidDiscrepancies(initialPids, newPids)
 
@@ -258,31 +230,27 @@ def main():
 			procDat = getProcData(i)
 			if procDat != DEAD_PROC :
 
-				if mode_stdout:
+					if mode_stdout:
 
-					strout = f"{GREEN_PLUS} [{datetime.now()}] [PID:{procDat.pid} PPID:{procDat.ppid}] "
-					strout += f"{procDat.user} ({procDat.uid}): {C_GRAY}{procDat.cmdline}{C_RESET}"
-					print(strout)
+						strout = f"{GREEN_PLUS} [{datetime.now()}] [PID:{procDat.pid} PPID:{procDat.ppid}] "
+						strout += f"{procDat.user} ({procDat.uid}): {C_GRAY}{procDat.cmdline}{C_RESET}"
+						print(strout)
 		
 					
-				if mode_file:
+					if mode_file:
 		
-					outputFile = args.o
+						outputFile = args.o
 					
-					# if the file already exists, no need to mark the file
-					# as a procSpy file since it already exists
-					checkFile(outputFile)				
-					writeNewProcs(procDat, outputFile)
+						# if the file already exists, no need to mark the file
+						# as a procSpy file since it already exists
+						checkFile(outputFile)				
+						writeNewProcs(procDat, outputFile)
 
-				if mode_db:
-					dbAddProc(procDat, args.u, args.p)
+					if mode_db:
+						dbAddProc(procDat)
 
 		
 		for i in pidDiffs['KILLED_PIDS']:
-
-			if mode_stdout:
-				strout = f"{RED_MINUS} [{datetime.now()}] PID {i} has terminated."
-				print(strout)
 
 			if mode_file:
 			
@@ -300,8 +268,65 @@ def main():
 
 
 
-main()
+
+
+	
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--modes', nargs='?', help='Specifies mode to output commands')
+parser.add_argument('-o', nargs='?', help='Specifies the output file in file mode')
+parser.add_argument('-u', nargs='?', help="Username for database mode.")
+parser.add_argument('-p', nargs='?', help="Password for database mode.")
+args = parser.parse_args()
+
+deployment_modes = args.modes
+deployments = deployment_modes.split(",")
+
+mode_stdout = False
+mode_file = False
+mode_db = False
+
+for i in deployments:
+	valid = False
+	if i.strip() == MODE_FILE:
+		mode_file = True
+		valid = True
+	if i.strip() == MODE_DB:
+		mode_db = True
+		valid = True
+	if i.strip() == MODE_STDOUT:
+		mode_stdout = True
+		valid = True
+
+	if not valid:
+		print(f"{RED_MINUS} Invalid mode(s) Selected. Please use '-h' for usage.")
+		sys.exit(1)
+		
+	
+if mode_file and not args.o:
+		print(f"{RED_MINUS} An output file must be specified when using file mode.")
+		sys.exit(1)
+
+if mode_db:
+	
+	import mysql.connector
+	import configparser
+
+	cfgExists = path.isfile(DB_CFG_FILE)
+	if not cfgExists:
+		print(f"{RED_MINUS} It looks like database mode has not been set up on this system (config file missing).")
+		print(f"{RED_MINUS} Please run the dbSetup.sh script to use database mode.")
+		sys.exit(1)
 
 
 
+try:
+	#initializes pids. This will be used as a baseline, and any newly added
+	#processes will be recorded.
 
+	initialPids = getPids()
+	sleep(3)
+	runCycle(initialPids)
+except KeyboardInterrupt:
+	print(f"{YELLOW_EX} Gracefully Exiting . . .")
+	sys.exit(1)
