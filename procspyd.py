@@ -25,6 +25,8 @@ PROC_DEAD = "DEADPROC"
 PROCSPY_FILE_INIT = "PROCSPY_FILE_HEADER"
 DB_NAME = "ProcSpy"
 
+DB_CFG_FILE = "./procSpyDb.cfg"
+
 PROCESS = namedtuple('PROCESS', 'pid ppid uid user cmdline timestamp')
 
 MODE_STDOUT = "stdout"
@@ -224,17 +226,21 @@ def main():
 			valid = True
 
 		if not valid:
-			print("Invalid mode(s) Selected. Please use '-h' for usage.")
+			print(f"{RED_MINUS} Invalid mode(s) Selected. Please use '-h' for usage.")
 			sys.exit(1)
 		
 	
 	if mode_file and not args.o:
-		print("An output file must be specified when using file mode.")
+		print(f"${RED_MINUS} An output file must be specified when using file mode.")
 		sys.exit(1)
 
-	if mode_db and not args.u:
-		print("Insufficient information provided for database mode.")
-		sys.exit(1)
+	if mode_db:
+
+		cfgExists = path.isFile(DB_CFG_FILE)
+		if not cfgExists:
+			print(f"${RED_MINUS} It looks like database mode has not been set up on this system (config file missing)."
+			print(f"${RED_MINUS} Please run the dbSetup.sh script to use database mode."
+			sys.exit(1)
 
 	#initializes pids. This will be used as a baseline, and any newly added
 	#processes will be recorded.
