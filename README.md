@@ -14,9 +14,9 @@ procSpy operates very similarly to the ps utility in that it parses the /proc di
 DEPLOYMENT OPTIONS
 -------------------
 procSpy has three core "modes" that it can be ran in, file mode, stdout mode and database mode.
-> File Mode: outputs detected commands into a specified output file that is designed to be parsable by the procSpy client at a later time.
-> Stdout Mode: output in realtime the commands being detected to the terminal. Results are not "recorded" in any way.
-> Database Mode: populates a locally established mySQL database with detected commands which can then be easily queried by the procSpy client.
+* File Mode: outputs detected commands into a specified output file that is designed to be parsable by the procSpy client at a later time.
+* Stdout Mode: output in realtime the commands being detected to the terminal. Results are not "recorded" in any way.
+* Database Mode: populates a locally established mySQL database with detected commands which can then be easily queried by the procSpy client.
 
 These deployment modes are not mutually exclusive; for example, you can run procSpy in stdout and file modes at the same time, allowing you to see the commands being ran in realtime as well as having the monitoring session recorded for future investigation. You can even run all three in unision if desired.
 
@@ -27,10 +27,10 @@ Database mode, on the other hand, is more so designed to be used in a Defensive 
 WHATS INCLUDED?
 ----------------
 The official repo consists of four main components:
-> procspyd.py - The core python application that parses and records the commands on the system.
-> procspyd-light.py - Same purpose as procspyd.py, though more so designed with less overhead/noise for offensive operations.
-> procspyclient.py - A small python script that parses out procSpy files or the procSpy database. This parsing can be done manually if needed, though it is reccomended to use the client.
-> dbsetup.sh - This script establishes the procSpy database. This will only be needed if you intend on using procSpy in database mode.
+* procspyd.py - The core python application that parses and records the commands on the system.
+* procspyd-light.py - Same purpose as procspyd.py, though more so designed with less overhead/noise for offensive operations.
+* procspyclient.py - A small python script that parses out procSpy files or the procSpy database. This parsing can be done manually if needed, though it is reccomended to use the client.
+* dbsetup.sh - This script establishes the procSpy database. This will only be needed if you intend on using procSpy in database mode.
 
 
 
