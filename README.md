@@ -5,7 +5,7 @@ procSpy is a Python application that monitors user space commands being ran via 
 
 <a href="https://asciinema.org/a/JnJgUxog92sxvsYr8dkyeZJSJ" target="_blank"><img src="https://asciinema.org/a/JnJgUxog92sxvsYr8dkyeZJSJ.svg" /></a>
 
-To see the utility in its most basic form, run the `python3 pyspyd.py --mode stdout` command. 
+To see the utility in its most basic form, run the `python3 procspyd.py --mode stdout` command. 
 
 WHAT IS PROCSPY DOING?
 -------------------
