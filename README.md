@@ -1,7 +1,11 @@
 # procSpy
+DISCLAIMER: This tool is still in VERY early stages of development. Please contact me on twitter @kindredsec if you have any questions/concerns/requests. I will continue adding onto this project for the foreseeable future.
+
 procSpy is a Python application that monitors user space commands being ran via /proc parsing, and records said commands in a "queriable" fashion for future investigation. The tool can to be utilized as both a defensive and offensive tool.
 
 <a href="https://asciinema.org/a/JnJgUxog92sxvsYr8dkyeZJSJ" target="_blank"><img src="https://asciinema.org/a/JnJgUxog92sxvsYr8dkyeZJSJ.svg" /></a>
+
+To see the utility in its most basic form, run the `python3 pyspyd.py --mode stdout` command. 
 
 WHAT IS PROCSPY DOING?
 -------------------
@@ -27,6 +31,19 @@ The official repo consists of four main components:
 * procspyd-light.py - Same purpose as procspyd.py, though more so designed with less overhead/noise for offensive operations.
 * procspyclient.py - A small python script that parses out procSpy files or the procSpy database. This parsing can be done manually if needed, though it is reccomended to use the client.
 * dbsetup.sh - This script establishes the procSpy database. This will only be needed if you intend on using procSpy in database mode.
+
+REQUIREMENTS
+--------------
+You will need:
+* python3
+* mysql-connector python module
+* mysql-server
+
+CONTACT ME
+-------------
+Twitter: https://twitter.com/kindredsec
+Discord: https://discord.gg/CCZCJCu
+Youtube: https://www.youtube.com/channel/UCwTH3RkRCIE35RJ16Nh8V8Q
 
 
 
