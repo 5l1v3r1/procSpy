@@ -217,7 +217,7 @@ def checkFile(filename):
 			f.write(PROCSPY_FILE_INIT + '\n')
 
 
-def runCycle(initialPids):
+def runCycle(initialPids, outputFile=""):
 
 	while SKY_IS_BLUE:
 
@@ -239,8 +239,6 @@ def runCycle(initialPids):
 					
 					if mode_file:
 		
-						outputFile = args.o
-					
 						# if the file already exists, no need to mark the file
 						# as a procSpy file since it already exists
 						checkFile(outputFile)				
@@ -254,7 +252,6 @@ def runCycle(initialPids):
 
 			if mode_file:
 			
-				outputFile = args.o
 				writeDeadProcs(i, outputFile)
 
 			if mode_db:
@@ -326,7 +323,11 @@ try:
 
 	initialPids = getPids()
 	sleep(3)
-	runCycle(initialPids)
+	if mode_file and args.o:
+		runCycle(initialPids, args.o)
+	else:
+		runCycle(initialPids)
+
 except KeyboardInterrupt:
 	print(f"{YELLOW_EX} Gracefully Exiting . . .")
 	sys.exit(1)
