@@ -41,9 +41,9 @@ You will need:
 
 CONTACT ME
 -------------
-Twitter: https://twitter.com/kindredsec
-Discord: https://discord.gg/CCZCJCu
-Youtube: https://www.youtube.com/channel/UCwTH3RkRCIE35RJ16Nh8V8Q
+* Twitter: https://twitter.com/kindredsec
+* Discord: https://discord.gg/CCZCJCu
+* Youtube: https://www.youtube.com/channel/UCwTH3RkRCIE35RJ16Nh8V8Q
 
 
 
