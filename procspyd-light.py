@@ -115,7 +115,6 @@ def runCycle(initialPids, outputFile="psout.log"):
 			procDat = getProcData(i)
 			if procDat != DEAD_PROC :
 
-					checkFile(outputFile)				
 					writeNewProcs(procDat, outputFile)
 
 
