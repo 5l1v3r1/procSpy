@@ -22,17 +22,17 @@ PROCESS = namedtuple('PROCESS', 'pid ppid uid user cmdline timestamp')
 
 def getProcData(pid):
 
-	proc_subdir = f'{PROC_DIR}/{str(pid)}'
+	proc_subdir = PROC_DIR + '/' + str(pid)
 	try:
 		filestats = stat(proc_subdir)
 		ownerUid = filestats.st_uid
 		timestamp = filestats.st_ctime
 		ownerName = pwd.getpwuid(ownerUid)[0]
-		with open(f'{proc_subdir}/cmdline', 'r') as fl:
+		with open(proc_subdir + '/cmdline', 'r') as fl:
 
 			cmds = fl.read().replace("\00", ' ').strip()
 
-		with open(f'{proc_subdir}/stat', 'r') as fl:
+		with open(proc_subdir + '/stat', 'r') as fl:
 			ppid = int(fl.read().split()[3])
 
 		
@@ -86,7 +86,7 @@ def writeNewProcs(procData, outfile):
 
 	timestamp = datetime.now()
 	
-	writeString = f'{timestamp}:::{procData.pid}:::{procData.ppid}:::{procData.uid}:::{procData.user}:::{procData.cmdline}'
+	writeString = str(timestamp) + ':::' + str(procData.pid) + ':::' + str(procData.ppid) + ':::' + str(procData.uid) + ':::' + procData.user + ':::' + procData.cmdline
 	
 	with open(outfile, 'a') as f:
 		f.write(writeString + '\n')
@@ -96,18 +96,10 @@ def writeDeadProcs(pid, outfile):
 	
 	timestamp = datetime.now()
 	
-	writeString = f'{timestamp}:::{str(pid)}:::{PROC_DEAD}'
+	writeString = str(timestamp) + ':::' + str(pid) + ':::' + PROC_DEAD
 
 	with open(outfile, 'a') as f:
 		f.write(writeString + '\n')
-
-
-def checkFile(filename):
-	
-	fileExists = path.isfile(filename)
-	if not fileExists:
-		with open(filename, "w") as f:
-			f.write(PROCSPY_FILE_INIT + '\n')
 
 
 def runCycle(initialPids, outputFile="psout.log"):
@@ -153,5 +145,5 @@ try:
 		runCycle(initialPids, args.o)
 
 except KeyboardInterrupt:
-	print(f"`Gracefully Exiting . . .")
+	print("Gracefully Exiting . . .")
 	sys.exit(1)
