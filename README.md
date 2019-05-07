@@ -3,7 +3,7 @@ DISCLAIMER: This tool is still in VERY early stages of development. Please conta
 
 procSpy is a Python application that monitors user space commands being ran via /proc parsing, and records said commands in a "queriable" fashion for future investigation. The tool can to be utilized as both a defensive and offensive tool.
 
-<a href="https://asciinema.org/a/JnJgUxog92sxvsYr8dkyeZJSJ" target="_blank"><img src="https://asciinema.org/a/JnJgUxog92sxvsYr8dkyeZJSJ.svg" /></a>
+[![asciicast](https://asciinema.org/a/244739.svg)](https://asciinema.org/a/244739)
 
 To see the utility in its most basic form, run the `python3 procspyd.py --mode stdout` command. 
 
