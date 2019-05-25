@@ -95,6 +95,7 @@ echo "[mySQL]" > ./procSpyDb.cfg
 echo "MYSQL_USER=${mySQLUser}" >> ./procSpyDb.cfg
 echo "MYSQL_PASS=${mySQLPass}" >> ./procSpyDb.cfg
 echo "MYSQL_DB=ProcSpy" >> ./procSpyDb.cfg
+echo "MYSQL_HOST=127.0.0.1" >> ./procSpyDb.cfg
 echo -e "${GREEN_PLUS} Config file created . . ."
 
 

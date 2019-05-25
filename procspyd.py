@@ -129,10 +129,11 @@ def dbAddProc(procData):
 	user = config["MYSQL_USER"]
 	passwd = config["MYSQL_PASS"]
 	database = config["MYSQL_DB"]
+        host = config["MYSQL_HOST"]
 
 	db = mysql.connector.connect( user=user,
 		        	      password=passwd,
-			              host="127.0.0.1",
+			              host=host,
      				      database=database
 		     			 )	
  

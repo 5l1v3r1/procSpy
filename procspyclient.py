@@ -78,8 +78,9 @@ def parseDb():
 	user = cfgData["MYSQL_USER"]
 	passwd = cfgData["MYSQL_PASS"]
 	database = cfgData["MYSQL_DB"]
+	host = cfgData["MYSQL_HOST"]
 
-	db = mysql.connector.connect( user=user, password=passwd, host="127.0.0.1", database=database )
+	db = mysql.connector.connect( user=user, password=passwd, host=host, database=database )
 
 	cursor = db.cursor()
 
