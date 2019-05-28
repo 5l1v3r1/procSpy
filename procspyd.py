@@ -48,7 +48,11 @@ def getProcData(pid):
                 with open(f'{proc_subdir}/cmdline', 'r') as fl:
 
                         #cmdline uses \00 for string separation, so we must replace those with spaces
-                        cmds = fl.read().replace("\00", ' ').strip()
+                        try:
+                            cmds = fl.read().replace("\00", ' ').strip()
+                        except:
+                            pass
+
 
                 with open(f'{proc_subdir}/stat', 'r') as fl:
                         ppid = int(fl.read().split()[3])
@@ -210,7 +214,7 @@ def dbTermProc(pid):
         db.close()
 
 
-def runCycle(initialPids, outputFile=""):
+def runCycle(initialPids, ignore="", outputFile=""):
 
         while SKY_IS_BLUE:
 
@@ -221,7 +225,27 @@ def runCycle(initialPids, outputFile=""):
                 for i in pidDiffs['SPAWNED_PIDS']:
                         
                         procDat = getProcData(i)
-                        if procDat != DEAD_PROC :
+                        if procDat != DEAD_PROC:
+
+                                if not ignore:
+
+                                        if mode_stdout:
+
+                                                strout = f"{GREEN_PLUS} [{datetime.now()}] [PID:{procDat.pid} PPID:{procDat.ppid}] "
+                                                strout += f"{procDat.user} ({procDat.uid}): {C_GRAY}{procDat.cmdline}{C_RESET}"
+                                                print(strout)
+                
+                                        
+                                        if mode_file:
+                
+                                                writeNewProcs(procDat, outputFile)
+
+                                        if mode_db:
+                                                dbAddProc(procDat)
+
+
+
+                                elif ignore and ignore not in procDat.cmdline:
 
                                         if mode_stdout:
 
@@ -262,6 +286,7 @@ def runCycle(initialPids, outputFile=""):
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', nargs='?', help='Specifies mode to output commands (either stdout,db or file, or any combination of those three)')
 parser.add_argument('-o', nargs='?', help='Specifies the output file in file mode')
+parser.add_argument('--ignore', nargs='?', help='Ignore a specific string.')
 args = parser.parse_args()
 
 deployment_modes = args.mode
@@ -312,9 +337,9 @@ try:
         initialPids = getPids()
         sleep(3)
         if mode_file and args.o:
-                runCycle(initialPids, args.o)
+                runCycle(initialPids, args.ignore, args.o)
         else:
-                runCycle(initialPids)
+                runCycle(initialPids, args.ignore)
 
 except KeyboardInterrupt:
         print(f"{YELLOW_EX} Gracefully Exiting . . .")
